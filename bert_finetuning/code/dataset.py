@@ -2,9 +2,9 @@ import jsonlines
 import re
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset,DataLoader
 import random
-
+from transformers import BertTokenizer, BertModel
 def get_data(read_path1,read_path2):
     dict_hypo_theoryset={}
     
@@ -90,10 +90,34 @@ class InputDataset(Dataset):
             "theory":theory,
             "hypo":hypo,
             "input_ids":encoding['input_ids'].flatten(),
-            "attention_mask":encoding['attention_mask'],
-            "token_type_ids":encoding['token_type_ids'],
-            "label":label
+            "attention_mask":encoding['attention_mask'].flatten(),
+            "token_type_ids":encoding['token_type_ids'].flatten(),
+            "labels":label
         }
     
+train_data_size=100000
+test_data_size=20000
+read_path1='entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
+read_path2='fullresult.jsonlines'
+
+if __name__ == '__main__':
     
+    data=get_data(read_path1,read_path2)
+    tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
+    train_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
+    test_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
+    train_data_loader=DataLoader(train_dataset,batch_size=4)
+    test_data_loader=DataLoader(test_dataset,batch_size=1)
+
+
+
+
+    batch = next(iter(train_data_loader))
+
+    print(batch)
+    print(batch['input_ids'].shape)
+    print(batch['attention_mask'].shape)
+    print(batch['token_type_ids'].shape)
+    print(batch['labels'].shape)
+
     

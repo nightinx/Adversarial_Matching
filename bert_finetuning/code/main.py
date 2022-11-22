@@ -1,83 +1,157 @@
+import time
+import numpy as np
+from torch import nn
+import time
+import os
 import torch
+import logging
+from torch.optim import AdamW
+from transformers import Trainer, TrainingArguments, BertTokenizer, BertModel, BertPreTrainedModel, BertConfig, \
+    get_linear_schedule_with_warmup
+from torch.utils.data import Dataset, DataLoader
+from transformers.utils.notebook import format_time
+from modeling import BertForSeq
 from dataset import get_data,InputDataset
-from torch.utils.data import DataLoader
-from model import BertForSeq
-from transformers import AdamW
-from transformers import get_linear_schedule_with_warmup
-import numpy as np
-import torch
-from transformers import BertTokenizer, BertModel
-from torch.utils.data import Dataset,DataLoader
-from train import train_func,eval_func
-import numpy as np
 
-from sklearn.model_selection import train_test_split
-from sklearn import metrics
+
 
 train_data_size=100000
 test_data_size=20000
 read_path1='entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
 read_path2='fullresult.jsonlines'
 
-def run(cfg):
-    
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+def train(batch_size,EPOCHS):
     data=get_data(read_path1,read_path2)
     tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
     train_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
     test_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
-    train_data_loader=DataLoader(train_dataset,batch_size=1)
-    test_data_loader=DataLoader(test_dataset,batch_size=1)
-
-
-
-    device = torch.device("cuda")
-    model = BertModel.from_pretrained("bert-base-uncased")
-
-    param_optimizer = list(model.named_parameters())
-    no_decay = [
-        "bias", 
-        "LayerNorm,bias",
-        "LayerNorm.weight",
-               ]
-    optimizer_parameters = [
-        {'params': [p for n,p in param_optimizer if not any(nd in n for nd in no_decay)],
-                   'weight_decay':0.001},
-        {'params': [p for n,p in param_optimizer if any(nd in n for nd in no_decay)],
-                   'weight_decay':0.0}
-    ]
-
-    num_train_steps = int(train_data_size/ 8*10)
-
-    optimizers = AdamW(optimizer_parameters, lr=3e-5)
-
-    scheduler = get_linear_schedule_with_warmup(
-        optimizers,
-        num_warmup_steps=0,
-        num_training_steps=num_train_steps
-
-    )
-
-    best_accuracy = 0
-    for epoch in range(5):
-        train_func(data_loader=train_data_loader, model=model, optimizer=optimizers, device=device, scheduler=scheduler)
-        outputs, targets = eval_func(data_loader=train_data_loader, model=model, device=device)
-        outputs = np.array(outputs) >= 0.5
-        val_accuracy = metrics.accuracy_score()
-
-        outputs, targets = eval_func(data_loader=test_data_loader, model=model, device=device)
-        outputs = np.array(outputs) >= 0.5
-        test_accuracy = metrics.accuracy_score()
-        print(f"Test Accuracy Score: {test_accuracy},Val Accuracy Score: {val_accuracy}")
-
-        if val_accuracy>best_accuracy:
-            torch.save(model.state_dict(), "model.bin")
-            best_accuracy = val_accuracy
-                
-import json
-              
-if __name__ == "__main__":
-    with open('config.json') as j:
-        cfg = json.load(j)
-    print(cfg)
-    run(cfg)
+    model = BertForSeq.from_pretrained('bert-base-uncased')
     
+    tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
+
+    
+
+    train_dataloader = DataLoader(train_dataset,batch_size=4)
+    val_dataloader = DataLoader(test_dataset,batch_size=1)
+
+    optimizer = AdamW(model.parameters(), lr=2e-5)
+    total_steps = len(train_dataloader) * EPOCHS  # len(dataset)*epochs / batchsize
+    scheduler = get_linear_schedule_with_warmup(optimizer,
+                                                num_warmup_steps=0,
+                                                num_training_steps=total_steps)
+    total_t0 = time.time()
+
+    log = log_creater(output_dir='./cache/logs/')
+
+    log.info("   Train batch size = {}".format(batch_size))
+    log.info("   Total steps = {}".format(total_steps))
+    log.info("   Training Start!")
+
+    for epoch in range(EPOCHS):
+        total_train_loss = 0
+        t0 = time.time()
+        model.to(device)
+        model.train()
+        for step, batch in enumerate(train_dataloader):
+
+            input_ids = batch['input_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            token_type_ids = batch['token_type_ids'].to(device)
+            labels = batch['labels'].to(device)
+            model.zero_grad()
+
+            outputs = model(input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids,labels=labels)
+
+            loss = outputs.loss
+            total_train_loss += loss.item()
+
+            loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+            scheduler.step()
+        avg_train_loss = total_train_loss / len(train_dataloader)
+        train_time = format_time(time.time() - t0)
+
+        log.info('====Epoch:[{}/{}] avg_train_loss={:.5f}===='.format(epoch+1,EPOCHS,avg_train_loss))
+        log.info('====Training epoch took: {:}===='.format(train_time))
+        log.info('Running Validation...')
+
+        model.eval()
+        avg_val_loss, avg_val_acc = evaluate(model, val_dataloader)
+        val_time = format_time(time.time() - t0)
+        log.info('====Epoch:[{}/{}] avg_val_loss={:.5f} avg_val_acc={:.5f}===='.format(epoch+1,EPOCHS,avg_val_loss,avg_val_acc))
+        log.info('====Validation epoch took: {:}===='.format(val_time))
+        log.info('')
+
+        if epoch == EPOCHS-1:
+            torch.save(model,'./cache/model_stu.bin')
+            print('Model Saved!')
+    log.info('')
+    log.info('   Training Completed!')
+    print('Total training took{:} (h:mm:ss)'.format(format_time(time.time() - total_t0)))
+
+def evaluate(model,val_dataloader):
+    total_val_loss = 0
+    corrects = []
+    for batch in val_dataloader:
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
+        token_type_ids = batch['token_type_ids'].to(device)
+        labels = batch['labels'].to(device)
+
+        with torch.no_grad():
+            outputs = model(input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids,labels=labels)
+
+        logits = torch.argmax(outputs.logits,dim=1)
+        ## put accuracy per batch into a list
+        ## gpu-> cpu
+        preds = logits.detach().cpu().numpy()
+        labels_ids = labels.to('cpu').numpy()
+        corrects.append((preds == labels_ids).mean())  ## [0.8,0.7,0.9]
+        ## get loss
+        loss = outputs.loss
+        ## loss per batch -> total_val_loss
+        ## len(val_dataloader) batches in total
+        total_val_loss += loss.item()
+
+    avg_val_loss = total_val_loss / len(val_dataloader)
+    avg_val_acc = np.mean(corrects)
+
+    return avg_val_loss, avg_val_acc
+
+def log_creater(output_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    log_name = '{}.log'.format(time.strftime('%Y-%m-%d-%H-%M'))
+    final_log_file = os.path.join(output_dir, log_name)
+    # creat a log
+    log = logging.getLogger('train_log')
+    log.setLevel(logging.DEBUG)
+
+    # FileHandler
+    file = logging.FileHandler(final_log_file)
+    file.setLevel(logging.DEBUG)
+
+    # StreamHandler
+    stream = logging.StreamHandler()
+    stream.setLevel(logging.DEBUG)
+
+    # Formatter
+    formatter = logging.Formatter(
+        '[%(asctime)s][line: %(lineno)d] ==> %(message)s')
+
+    # setFormatter
+    file.setFormatter(formatter)
+    stream.setFormatter(formatter)
+
+    # addHandler
+    log.addHandler(file)
+    log.addHandler(stream)
+
+    log.info('creating {}'.format(final_log_file))
+    return log
+
+if __name__ == '__main__':
+    train(batch_size=4,EPOCHS=100)
