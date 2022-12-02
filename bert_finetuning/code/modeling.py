@@ -63,10 +63,10 @@ class BertForSeq(BertPreTrainedModel):
 if __name__ == '__main__':
 
 
-    data=get_data(read_path1,read_path2)
+    
     tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
-    train_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
-    test_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
+    train_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
+    test_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
     train_data_loader=DataLoader(train_dataset,batch_size=1)
     test_data_loader=DataLoader(test_dataset,batch_size=1)
 

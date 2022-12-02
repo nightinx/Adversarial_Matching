@@ -23,10 +23,10 @@ read_path2='fullresult.jsonlines'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def train(batch_size,EPOCHS):
-    data=get_data(read_path1,read_path2)
+    #data=get_data(read_path1,read_path2)
     tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
-    train_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
-    test_dataset=InputDataset(data=data,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
+    train_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
+    test_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
     model = BertForSeq.from_pretrained('bert-base-uncased')
     
     tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
