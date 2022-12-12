@@ -138,10 +138,13 @@ if __name__=='__main__':
     tsk1_path="./data/entailment_trees_emnlp2021_data_v3/dataset/task_1"
     train_path=os.path.join(tsk1_path,'train.jsonl')
     unzip(zip_path,path)
-    dict_set,dict_para=build_hypo_dictionary(train_path)
-    hypo_list=[]
-    theory_list=[]
-    for i,hypothesis1 in enumerate(dict_para.keys()):
-        hypo_list.append(hypothesis1)
-        theory_list.append(dict_para[hypothesis1])
-    write_as_json_all(hypo_list,theory_list,'./data/aligened_tree.jsonlines')
+    # dict_set,dict_para=build_hypo_dictionary(train_path)
+    # hypo_list=[]
+    # theory_list=[]
+    # for i,hypothesis1 in enumerate(dict_para.keys()):
+    #     hypo_list.append(hypothesis1)
+    #     theory_list.append(dict_para[hypothesis1])
+    # write_as_json_all(hypo_list,theory_list,'./data/aligened_tree.jsonlines')
+    zip_path="./data/aligened_tree.zip"
+    unzip_path="./data/aligened_tree.jsonlines"
+    unzip(zip_path,unzip_path)
