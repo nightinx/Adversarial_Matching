@@ -121,7 +121,6 @@ def write_as_json_all(hypo_list,theory_list,path,nlp):
             attackhypo=align_response(hypo_list,theory_list,i,j,nlp)
             adversay_dict[hypo1]+=attackhypo
             adversay_dict[hypo1]+='.'
-        break
     with jsonlines.open(path, 'a') as w:
         for hypo,attack_list in adversay_dict.items():
             w.write({hypo: attack_list})
