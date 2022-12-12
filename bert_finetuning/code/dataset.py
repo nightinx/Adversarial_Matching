@@ -95,13 +95,13 @@ class InputDataset(Dataset):
             "labels":label
         }
     
-train_data_size=100000
-test_data_size=20000
-read_path1='entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
-read_path2='fullresult.jsonlines'
 
 if __name__ == '__main__':
-    
+    train_data_size=100000
+    test_data_size=20000
+    read_path1='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
+    read_path2='./data/fullresult.jsonlines'
+
     tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
     train_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
     test_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')

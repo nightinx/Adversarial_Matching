@@ -12,27 +12,36 @@ from torch.utils.data import Dataset, DataLoader
 from transformers.utils.notebook import format_time
 from modeling import BertForSeq
 from dataset import get_data,InputDataset
+import argparse
+
+def add_learner_params():
+    parser=argparse.ArgumentParser()
+    # trainer params
+    parser.add_argument('--train_data_size', default=100000, type=int, help='length of training data size')
+    parser.add_argument('--test_data_size', default=20000, type=int, help='length of test data size')
+    parser.add_argument('--read_path1', default='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl', 
+    type=str, help='read from entailment dataset')
+    parser.add_argument('-read_path2', default='./data/aligened_tree.jsonlines', type=str, help='read from aligned')
+    parser.add_argument('--sent_len', default=500, type=int, help='max length of sentences fed into bert')
+    parser.add_argument('--batch_size', default=4, type=int, help='batch size for both training and eval')
+    parser.add_argument('--epochs', default=100, type=int, help='epoch for training')
+    return parser
 
 
+def train():
+    parser=add_learner_params()
+    args=parser.parse_args()
+    args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-train_data_size=100000
-test_data_size=20000
-read_path1='entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
-read_path2='fullresult.jsonlines'
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-def train(batch_size,EPOCHS):
+    batch_size=args.batch_size,
+    EPOCHS=args.epochs
+    device=args.device
     #data=get_data(read_path1,read_path2)
     tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
-    train_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
-    test_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
+    train_dataset=InputDataset(read_path1=args.read_path1,read_path2=args.read_path2,tokenizer=tokenizer,sent_len= args.sent_len,data_size= args.train_data_size,split=0.8,mode='train')
+    test_dataset=InputDataset(read_path1=args.read_path1,read_path2=args.read_path2,tokenizer=tokenizer,sent_len= args.sent_len,data_size= args.test_data_size,split=0.2,mode='test')
     model = BertForSeq.from_pretrained('bert-base-uncased')
     
-    tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
-
-    
-
     train_dataloader = DataLoader(train_dataset,batch_size=4)
     val_dataloader = DataLoader(test_dataset,batch_size=1)
 
@@ -154,4 +163,4 @@ def log_creater(output_dir):
     return log
 
 if __name__ == '__main__':
-    train(batch_size=4,EPOCHS=100)
+    train()
