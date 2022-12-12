@@ -98,7 +98,7 @@ def train(args):
         log.info('')
 
         if epoch == EPOCHS-1:
-            torch.save(model,os.path.join(args.save_dir,'cache/model_stu.bin'))
+            torch.save(model,os.path.join(args.save_dir,f'cache/model_{time.strftime('%Y-%m-%d-%H-%M')}.bin'))
             print('Model Saved!')
     log.info('')
     log.info('   Training Completed!')
