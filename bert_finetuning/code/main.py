@@ -13,6 +13,7 @@ from transformers.utils.notebook import format_time
 from modeling import BertForSeq
 from dataset import get_data,InputDataset
 import argparse
+import os
 
 def add_learner_params():
     parser=argparse.ArgumentParser()
@@ -25,13 +26,16 @@ def add_learner_params():
     parser.add_argument('--sent_len', default=500, type=int, help='max length of sentences fed into bert')
     parser.add_argument('--batch_size', default=4, type=int, help='batch size for both training and eval')
     parser.add_argument('--epochs', default=100, type=int, help='epoch for training')
-    return parser
-
-
-def train():
+    parser.add_argument('--save_dir', default='./bert_finetuning', type=str, help='save_path')
     parser=add_learner_params()
     args=parser.parse_args()
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
+    return args
+
+
+def train(args):
 
     batch_size=args.batch_size,
     EPOCHS=args.epochs
@@ -52,7 +56,7 @@ def train():
                                                 num_training_steps=total_steps)
     total_t0 = time.time()
 
-    log = log_creater(output_dir='./cache/logs/')
+    log = log_creater(output_dir=os.path.join(args.save_dir,'cache/logs/'))
 
     log.info("   Train batch size = {}".format(batch_size))
     log.info("   Total steps = {}".format(total_steps))
@@ -95,15 +99,16 @@ def train():
         log.info('')
 
         if epoch == EPOCHS-1:
-            torch.save(model,'./cache/model_stu.bin')
+            torch.save(model,os.path.join(args.save_dir,'cache/model_stu.bin'))
             print('Model Saved!')
     log.info('')
     log.info('   Training Completed!')
     print('Total training took{:} (h:mm:ss)'.format(format_time(time.time() - total_t0)))
 
-def evaluate(model,val_dataloader):
+def evaluate(model,val_dataloader,args):
     total_val_loss = 0
     corrects = []
+    device=args.device
     for batch in val_dataloader:
         input_ids = batch['input_ids'].to(device)
         attention_mask = batch['attention_mask'].to(device)
