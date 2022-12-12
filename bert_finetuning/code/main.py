@@ -27,7 +27,6 @@ def add_learner_params():
     parser.add_argument('--batch_size', default=4, type=int, help='batch size for both training and eval')
     parser.add_argument('--epochs', default=100, type=int, help='epoch for training')
     parser.add_argument('--save_dir', default='./bert_finetuning', type=str, help='save_path')
-    parser=add_learner_params()
     args=parser.parse_args()
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if not os.path.exists(args.save_dir):
@@ -57,7 +56,7 @@ def train(args):
     total_t0 = time.time()
 
     log = log_creater(output_dir=os.path.join(args.save_dir,'cache/logs/'))
-
+    log.info("   args = {}".format(args))
     log.info("   Train batch size = {}".format(batch_size))
     log.info("   Total steps = {}".format(total_steps))
     log.info("   Training Start!")
@@ -168,4 +167,5 @@ def log_creater(output_dir):
     return log
 
 if __name__ == '__main__':
-    train()
+    args=add_learner_params()
+    train(args)
