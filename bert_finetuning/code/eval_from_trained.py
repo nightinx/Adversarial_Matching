@@ -63,7 +63,7 @@ def test(args,model,dataloader):
     save_path=os.path.join(save_dir,'relevance')
     np.save(save_path, save_mat, allow_pickle=True, fix_imports=True)
     arr=np.load(save_path+'.npy')
-    print(arr)
+    #print(arr)
 
 
     
