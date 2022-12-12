@@ -22,7 +22,7 @@ def add_learner_params():
     parser.add_argument('--test_data_size', default=20000, type=int, help='length of test data size')
     parser.add_argument('--read_path1', default='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl', 
     type=str, help='read from entailment dataset')
-    parser.add_argument('-read_path2', default='./data/aligened_tree.jsonlines', type=str, help='read from aligned')
+    parser.add_argument('-read_path2', default='./data/aligened_tree/aligened_tree.jsonlines', type=str, help='read from aligned')
     parser.add_argument('--sent_len', default=500, type=int, help='max length of sentences fed into bert')
     parser.add_argument('--batch_size', default=4, type=int, help='batch size for both training and eval')
     parser.add_argument('--epochs', default=100, type=int, help='epoch for training')
