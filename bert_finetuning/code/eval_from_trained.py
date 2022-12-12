@@ -14,6 +14,8 @@ from dataset import Eval_false_Dataset,Eval_true_Dataset
 import argparse
 import os
 from utils import set_seed
+
+#generate weight matrix of relevance
 def add_learner_params():
     parser=argparse.ArgumentParser()
     # trainer params
