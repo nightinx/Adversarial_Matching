@@ -25,7 +25,8 @@ def get_adv(n,neg_length,weight_mat,data):
     neg=np.array(data['neg'])
     for i in range(neg_length):
         topnarg=np.argpartition(weight_mat[i], -n)[-n:]
-        topn.append([pos[i]]+neg[i][topnarg].tolist())
+        neg_sents=[item.replace(',',';') for item in neg[i][topnarg]]
+        topn.append([pos[i]]+neg_sents)
     
     save_topn(topn,n,'./data/topn')
 
@@ -34,9 +35,10 @@ if __name__=='__main__':
     read_path2='./data/aligened_tree/aligened_tree.jsonlines'
     data=get_data(read_path1,read_path2)
     relevance=np.load('./data/relevance/relevance.npy')
+    print(type(relevance))
     similarity=np.load('./data/similarity/similarity.npy')
     neg_length=len(data['neg'][0])
-    weight_mat=compute_weight(relevance,similarity,0.5)
+    weight_mat=compute_weight(relevance,similarity,-0.2)
     for i in range(3,10):
         get_adv(i,neg_length,weight_mat,data)
 
