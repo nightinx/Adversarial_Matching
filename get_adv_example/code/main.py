@@ -6,6 +6,8 @@ import numpy as np
 import torch
 import csv
 import os
+
+#generate negative hypothesis
 def compute_weight(relevance,similarty,lambda_):
     return np.log(relevance)+lambda_*(1-np.log(similarty))
 

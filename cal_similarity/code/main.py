@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import os
 
-
+#generate weight matrix of similarity
 
 read_path1='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
 read_path2='./data/aligened_tree/aligened_tree.jsonlines'

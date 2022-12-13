@@ -15,6 +15,8 @@ from dataset import get_data,InputDataset
 import argparse
 import os
 from utils import set_seed
+
+#fine tune bert 
 def add_learner_params():
     parser=argparse.ArgumentParser()
     # trainer params
