@@ -101,7 +101,10 @@ def train(args):
 
         if epoch == EPOCHS-1:
             savename=f"{time.strftime('%Y-%m-%d-%H-%M')}"
-            torch.save(model.state_dict(),os.path.join(args.save_dir,f'cache/model_{savename}.bin'))
+            save_model_path=os.path.join(args.save_dir,f'saved_model_{args.batch_size}_{args.train_data_size}_{args.test_data_size}')
+            if not os.path.exists(save_model_path):
+                os.makedirs(save_model_path)
+            torch.save(model.state_dict(),os.path.join(save_model_path,f'model_{savename}.bin'))
             print('Model Saved!')
     log.info('')
     log.info('   Training Completed!')
@@ -127,7 +130,7 @@ def evaluate(model,val_dataloader,args):
         labels_ids = labels.to('cpu').numpy()
         # print(preds)
         # print(labels_ids)
-        corrects.append((preds == labels_ids).mean())  ## [0.8,0.7,0.9]
+        corrects.append((preds == labels_ids).mean())  
         ## get loss
         loss = outputs.loss
         ## loss per batch -> total_val_loss
