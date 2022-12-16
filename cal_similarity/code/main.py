@@ -15,7 +15,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 neg_len=len(data['neg'][0])
 # neg_len=36
 sim_mat=torch.zeros((neg_len,neg_len)).to(device)
-model = SentenceTransformer('hiiamsid/sentence_similarity_hindi')
+model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
 for i in range(neg_len):
     print(i)
     pos_sentences = [data['pos'][i]]

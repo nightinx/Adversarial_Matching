@@ -9,7 +9,7 @@ import os
 
 #generate negative hypothesis
 def compute_weight(relevance,similarty,lambda_):
-    return relevance+lambda_*(1-similarty)
+    return np.log(relevance)+lambda_*(1-np.log(similarty))
 
 
 def save_topn(topn,n,path):
@@ -32,26 +32,26 @@ def get_adv(n,neg_length,weight_mat,data):
     
     save_topn(topn,n,'./data/topn')
 
-largenumber=1e10
+def test(data,relevance,similarity,pos,neg):
+    print(f"Negtive Sample :  {data['neg'][pos][neg]}")
+    print(f"Positive Sample :  {data['pos'][pos]}")
+    print(f"Theory :  {data['theory'][pos]}")
+    print(f"Similarity :  {similarity[pos][neg]}")
+    print(f"Relevance :  {relevance[pos][neg]}")
+    print()
+
 if __name__=='__main__':
     read_path1='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
     read_path2='./data/aligened_tree/aligened_tree.jsonlines'
     data=get_data(read_path1,read_path2)
     relevance=np.load('./data/relevance/relevance.npy')
-    print(type(relevance))
     similarity=np.load('./data/similarity/similarity.npy')
-    neg_length=len(data['neg'][0])
-    weight_mat=compute_weight(relevance,similarity,-0.2)
+    # for i in range(1276):
+    #     for j in range(1276):
+    #         if relevance[i][j]>0.1:
+    #             test(data,relevance,similarity,i,j)
     for i in range(1276):
-        weight_mat[i][-1]=-largenumber
-    for i in range(1276):
-        for j in range(1276):
-            if relevance[i][j]>0.9:
-                weight_mat[i][j]=-largenumber
-    for i in range(3,10):
-        get_adv(i,neg_length,weight_mat,data)
-
-
+        test(data,relevance,similarity,i,-1)
 
 
 

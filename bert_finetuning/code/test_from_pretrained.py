@@ -53,19 +53,7 @@ def test(args,model,dataloader):
             outputs = model(input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids,labels=labels)
 
         logits = torch.softmax(outputs.logits,dim=1)[:,1]
-        save_mat[row_idx][col_idx:col_idx+args.batch_size]=logits
-        col_idx+=args.batch_size
-        if col_idx>=args.neg_length:
-            col_idx=0
-            row_idx+=1
-    save_mat=save_mat.detach().cpu().numpy()
-    save_dir=os.path.join(args.data_path,'relevance')
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    save_path=os.path.join(save_dir,'relevance')
-    np.save(save_path, save_mat, allow_pickle=True, fix_imports=True)
-    arr=np.load(save_path+'.npy')
-    #print(arr)
+        print(logits.detach().cpu().numpy())
 
 
     
@@ -86,7 +74,7 @@ def main(args):
 
     pos_dataloader = DataLoader(pos_dataset,batch_size=batch_size)
     neg_dataloader = DataLoader(neg_dataset,batch_size=batch_size)
-    test(args,model,neg_dataloader)
+    test(args,model,pos_dataloader)
     
 
 if __name__ == '__main__':
