@@ -27,7 +27,7 @@ def add_learner_params():
     parser.add_argument('--batch_size', default=638, type=int, help='batch size for both training and eval')
     parser.add_argument('--epochs', default=1, type=int, help='epoch for training')
     parser.add_argument('--save_dir', default='./bert_finetuning', type=str, help='save_path')
-    parser.add_argument('--trained_model_path', default='./bert_finetuning/cache/model_2022-12-14-20-21.bin', type=str, help='model path')
+    parser.add_argument('--trained_model_path', default='./bert_finetuning/cache/model_2022-12-14-19-26.bin', type=str, help='model path')
     parser.add_argument('--data_path', default='./data', type=str, help='data path')
     args=parser.parse_args()
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -62,7 +62,8 @@ def test(args,model,dataloader):
     save_dir=os.path.join(args.data_path,'relevance')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    save_path=os.path.join(save_dir,'relevance')
+    savename=args.trained_model_path.split('/')[-1][-5:]
+    save_path=os.path.join(save_dir,'relevance_1_'+savename)
     np.save(save_path, save_mat, allow_pickle=True, fix_imports=True)
     arr=np.load(save_path+'.npy')
     #print(arr)

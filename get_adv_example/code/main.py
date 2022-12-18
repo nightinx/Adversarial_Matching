@@ -46,7 +46,7 @@ if __name__=='__main__':
         weight_mat[i][-1]=-largenumber
     for i in range(1276):
         for j in range(1276):
-            if relevance[i][j]>0.9:
+            if relevance[i][j]>0.95:
                 weight_mat[i][j]=-largenumber
     for i in range(3,10):
         get_adv(i,neg_length,weight_mat,data)

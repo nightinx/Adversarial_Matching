@@ -68,7 +68,7 @@ class InputDataset(Dataset):
             item=item%(int(len(self.data['theory'])*self.split))+int((1-self.split)*len(self.data['theory']))
         
             
-        if x[0]<=25:
+        if x[0]<=50:
             label=1
             hypo=self.data['pos'][item]
         else:
@@ -170,32 +170,27 @@ class Eval_true_Dataset(Dataset):
     
 
 if __name__ == '__main__':
-    # train_data_size=100000
-    # test_data_size=20000
+    train_data_size=200
+    test_data_size=200
     read_path1='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
     read_path2='./data/aligened_tree/aligened_tree.jsonlines'
     data=get_data(read_path1,read_path2)
-    for j,i in enumerate(data['neg'][2]):
-        if len(i)<13:
-            print(j,i)
-    # tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
+    tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
     # dataset=Eval_true_Dataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500)
-    # # train_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
-    # # test_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
+    train_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= train_data_size,split=0.8,mode='train')
+    test_dataset=InputDataset(read_path1=read_path1,read_path2=read_path2,tokenizer=tokenizer,sent_len= 500,data_size= test_data_size,split=0.2,mode='test')
     # data_loader=DataLoader(dataset,batch_size=1)
-    # # test_data_loader=DataLoader(test_dataset,batch_size=1)
+    test_data_loader=DataLoader(test_dataset,batch_size=1)
+    train_data_loader=DataLoader(train_dataset,batch_size=1)
 
 
 
-    # for step, batch in enumerate(data_loader):
-    #     print(step)
-    #     if step>55555 and step<55560 :
-    #         print(batch["theory"])
-    #         print(batch["hypo"])
-    #         print(data["theory"][int(step/1276)])
-    #         print(data["neg"][int(step/1276)][step%1276])
-    #     if step>55560:
-    #         break
+    for step, batch in enumerate(train_data_loader):
+        print(step)
+        print(batch["theory"])
+        print(batch["hypo"])
+        print(batch["labels"])
+    
     # batch = next(iter(dataset))
     # print(len(train_data_loader))
     # print(len(test_data_loader))
