@@ -11,7 +11,7 @@ from transformers import Trainer, TrainingArguments, BertTokenizer, BertModel, B
 from torch.utils.data import Dataset, DataLoader
 from transformers.utils.notebook import format_time
 from modeling import BertForSeq
-from dataset import get_data,InputDataset
+from dataset import get_data,InputDataset,InputDataset_V2,get_data_from_folds
 import argparse
 import os
 from utils import set_seed
@@ -20,11 +20,12 @@ from utils import set_seed
 def add_learner_params():
     parser=argparse.ArgumentParser()
     # trainer params
-    parser.add_argument('--train_data_size', default=50000, type=int, help='length of training data size')
-    parser.add_argument('--test_data_size', default=5000, type=int, help='length of test data size')
+    parser.add_argument('--train_data_size', default=96, type=int, help='length of training data size')
+    parser.add_argument('--test_data_size', default=96, type=int, help='length of test data size')
     parser.add_argument('--read_path1', default='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl', 
     type=str, help='read from entailment dataset')
-    parser.add_argument('-read_path2', default='./data/aligened_tree/aligened_tree.jsonlines', type=str, help='read from aligned')
+    parser.add_argument('--read_path2', default='./data/aligened_tree/aligened_tree.jsonlines', type=str, help='read from aligned')
+    parser.add_argument('--folds_dir', default='./data/folds', type=str, help='location of splitted folds ')
     parser.add_argument('--sent_len', default=500, type=int, help='max length of sentences fed into bert')
     parser.add_argument('--batch_size', default=16, type=int, help='batch size for both training and eval')
     parser.add_argument('--epochs', default=3, type=int, help='epoch for training')
@@ -32,6 +33,8 @@ def add_learner_params():
     parser.add_argument('--train_split', default=0.5, type=float, help='training split')
     parser.add_argument('--test_split', default=0.5, type=float, help='testing split')
     parser.add_argument('--learning_rate', default=2e-5, type=float, help='learning rate')
+    parser.add_argument('--train_fold', default=0, type=int, help='fold index')
+    parser.add_argument('--random_true', default=0.25, type=float, help='probability for true label')
     args=parser.parse_args()
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if not os.path.exists(args.save_dir):
@@ -46,10 +49,13 @@ def train(args):
     device=args.device
     #data=get_data(read_path1,read_path2)
     tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
-    train_dataset=InputDataset(read_path1=args.read_path1,read_path2=args.read_path2,tokenizer=tokenizer,sent_len= args.sent_len,data_size= args.train_data_size,split=args.train_split,mode='train')
-    test_dataset=InputDataset(read_path1=args.read_path1,read_path2=args.read_path2,tokenizer=tokenizer,sent_len= args.sent_len,data_size= args.test_data_size,split=args.test_split,mode='test')
+    # train_dataset=InputDataset(read_path1=args.read_path1,read_path2=args.read_path2,tokenizer=tokenizer,sent_len= args.sent_len,data_size= args.train_data_size,split=args.train_split,mode='train')
+    # test_dataset=InputDataset(read_path1=args.read_path1,read_path2=args.read_path2,tokenizer=tokenizer,sent_len= args.sent_len,data_size= args.test_data_size,split=args.test_split,mode='test')
     model = BertForSeq.from_pretrained('bert-base-uncased')
-    
+    data_train,data_test=get_data_from_folds(args.read_path1,args.folds_dir,args.train_fold)
+    train_dataset=InputDataset_V2(tokenizer=tokenizer,sent_len= args.sent_len,data_size=args.train_data_size,data=data_train,random_true=args.random_true)
+    test_dataset=InputDataset_V2(tokenizer=tokenizer,sent_len= args.sent_len,data_size=args.test_data_size,data=data_test,random_true=args.random_true)
+
     train_dataloader = DataLoader(train_dataset,batch_size=batch_size)
     val_dataloader = DataLoader(test_dataset,batch_size=batch_size)
 
@@ -108,7 +114,7 @@ def train(args):
             save_model_path=os.path.join(save_model_path,f'saved_model_{args.batch_size}_{args.train_data_size}_{args.test_data_size}')
             if not os.path.exists(save_model_path):
                 os.makedirs(save_model_path)
-            torch.save(model.state_dict(),os.path.join(save_model_path,f'model_{savename}.bin'))
+            torch.save(model.state_dict(),os.path.join(save_model_path,f'model_{savename}_{args.train_fold}.bin'))
             print('Model Saved!')
     log.info('')
     log.info('   Training Completed!')
