@@ -308,6 +308,75 @@ class Eval_true_Dataset(Dataset):
             "token_type_ids":encoding['token_type_ids'].flatten(),
             "labels":label
         }
+class Eval_false_Dataset_V2(Dataset):
+    def __init__(self, data,tokenizer,sent_len,data_length):
+        self.data=data
+        self.data_length=data_length
+        self.data_size=self.data_length*self.data_length
+        self.sent_len=sent_len
+        self.tokenizer=tokenizer
+        
+    def __len__(self,):
+        return self.data_size
+    
+    def __getitem__(self,item):        
+        label=torch.tensor(0,dtype=torch.long)
+        theory=self.data['theory'][int(item/self.data_length)]
+        hypo=self.data['neg'][int(item/self.data_length)][item%self.data_length]
+        encoding=self.tokenizer.encode_plus(
+            theory,
+            hypo,
+            add_special_tokens=True, #add [CLS] and [SEP]
+            max_length=self.sent_len,#max input length
+            return_token_type_ids=True,#theory 11111 and hypo 00000
+            pad_to_max_length=True,# fill or cut up to max input length 
+            return_attention_mask=True,# attention encoding
+            return_tensors='pt'# pytorch model
+        )
+        
+        return {
+            "theory":theory,
+            "hypo":hypo,
+            "input_ids":encoding['input_ids'].flatten(),
+            "attention_mask":encoding['attention_mask'].flatten(),
+            "token_type_ids":encoding['token_type_ids'].flatten(),
+            "labels":label
+        }
+
+class Eval_true_Dataset_V2(Dataset):
+    def __init__(self, data,tokenizer,sent_len,data_length):
+        self.data=data
+        self.data_length=data_length
+        self.data_size=self.data_length
+        self.sent_len=sent_len
+        self.tokenizer=tokenizer
+        
+    def __len__(self,):
+        return self.data_size
+    
+    def __getitem__(self,item):        
+        label=torch.tensor(1,dtype=torch.long)
+        theory=self.data['theory'][item]
+        hypo=self.data['pos'][item]
+        encoding=self.tokenizer.encode_plus(
+            theory,
+            hypo,
+            add_special_tokens=True, #add [CLS] and [SEP]
+            max_length=self.sent_len,#max input length
+            return_token_type_ids=True,#theory 11111 and hypo 00000
+            pad_to_max_length=True,# fill or cut up to max input length 
+            return_attention_mask=True,# attention encoding
+            return_tensors='pt'# pytorch model
+        )
+        
+        return {
+            "theory":theory,
+            "hypo":hypo,
+            "input_ids":encoding['input_ids'].flatten(),
+            "attention_mask":encoding['attention_mask'].flatten(),
+            "token_type_ids":encoding['token_type_ids'].flatten(),
+            "labels":label
+        }
 
 
 if __name__ == '__main__':
