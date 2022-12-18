@@ -64,8 +64,8 @@ def test(args,model,dataloader):
     save_dir=os.path.join(args.data_path,'relevance')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    savename=args.trained_model_path.split('/')[-1][-5:]
-    save_path=os.path.join(save_dir,'relevance_'+savename)
+    savename=args.trained_model_path.split('/')[-1][:-5]
+    save_path=os.path.join(save_dir,'relevance_'+savename+'-'+f"{args.train_fold}")
     np.save(save_path, save_mat, allow_pickle=True, fix_imports=True)
     arr=np.load(save_path+'.npy')
     print(arr)
