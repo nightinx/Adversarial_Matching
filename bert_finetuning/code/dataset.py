@@ -380,32 +380,35 @@ class Eval_true_Dataset_V2(Dataset):
 
 
 if __name__ == '__main__':
+    
     read_path1='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
     read_path2='./data/aligened_tree/aligened_tree.jsonlines'
-    #split_folds(read_path1,read_path2,4,'./data/folds')
-    # sys.exit()
-    data=get_data(read_path1,read_path2)
-    length=319
-    for index in range(4):
-        data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
-        for i in range(length):
-            x=i+index*length
-            assert data_test['pos'][i]==data['pos'][x]
-            assert data_test['theory'][i]==data['theory'][x]
+    # #split_folds(read_path1,read_path2,4,'./data/folds')
+    # # sys.exit()
+    # data=get_data(read_path1,read_path2)
+    # length=319
+    # for index in range(4):
+    #     data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
+    #     for i in range(length):
+    #         x=i+index*length
+    #         assert data_test['pos'][i]==data['pos'][x]
+    #         assert data_test['theory'][i]==data['theory'][x]
 
-    print(len(data_train['theory']))
-    print(len(data_train['pos']))
-    print(len(data_train['neg']))
+    # print(len(data_train['theory']))
+    # print(len(data_train['pos']))
+    # print(len(data_train['neg']))
+    # for i in range(len(data_test['theory'])):
+    #     print(len(data_test['neg'][i]))
 
-    for index in range(4):
-        data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
-        for i in range(4*length-length):
-            if i<index*length:
-                x=i
-            else:
-                x=i+length
-            assert data_train['pos'][i]==data['pos'][x]
-            assert data_train['theory'][i]==data['theory'][x]
+    # for index in range(4):
+    #     data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
+    #     for i in range(4*length-length):
+    #         if i<index*length:
+    #             x=i
+    #         else:
+    #             x=i+length
+    #         assert data_train['pos'][i]==data['pos'][x]
+    #         assert data_train['theory'][i]==data['theory'][x]
     
    
     
@@ -460,4 +463,3 @@ if __name__ == '__main__':
     #         print(data["pos"][step])
     #     if step>1005:
     #         break
-    

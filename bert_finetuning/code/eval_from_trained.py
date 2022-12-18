@@ -10,7 +10,7 @@ from transformers import Trainer, TrainingArguments, BertTokenizer, BertModel, B
 from torch.utils.data import Dataset, DataLoader
 from transformers.utils.notebook import format_time
 from modeling import BertForSeq
-from dataset import Eval_false_Dataset,Eval_true_Dataset,Eval_true_Dataset_V2,Eval_false_Dataset_V2
+from dataset import Eval_false_Dataset,Eval_true_Dataset,Eval_true_Dataset_V2,Eval_false_Dataset_V2,get_data_from_folds
 import argparse
 import os
 from utils import set_seed
@@ -27,7 +27,7 @@ def add_learner_params():
     parser.add_argument('--batch_size', default=319, type=int, help='batch size for both training and eval')
     parser.add_argument('--epochs', default=1, type=int, help='epoch for training')
     parser.add_argument('--save_dir', default='./bert_finetuning', type=str, help='save_path')
-    parser.add_argument('--trained_model_path', default='./bert_finetuning/cache/model_2022-12-14-19-26.bin', type=str, help='model path')
+    parser.add_argument('--trained_model_path', default='/home/cc/github/Adversarial_Matching/bert_finetuning/cache/saved_model_16_96_96/model_2022-12-18-03-09_0.bin', type=str, help='model path')
     parser.add_argument('--data_path', default='./data', type=str, help='data path')
     parser.add_argument('--train_fold', default=0, type=int, help='fold index')
     parser.add_argument('--folds_dir', default='./data/folds', type=str, help='location of splitted folds ')
@@ -65,7 +65,7 @@ def test(args,model,dataloader):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     savename=args.trained_model_path.split('/')[-1][-5:]
-    save_path=os.path.join(save_dir,'relevance_'+savename+'-'+args.folds_index)
+    save_path=os.path.join(save_dir,'relevance_'+savename)
     np.save(save_path, save_mat, allow_pickle=True, fix_imports=True)
     arr=np.load(save_path+'.npy')
     print(arr)
