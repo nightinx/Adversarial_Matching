@@ -206,7 +206,7 @@ class InputDataset_V2(Dataset):
     
     def __getitem__(self,item):
         x=np.random.rand(1)*100
-        item%(int(len(self.data['theory'])))
+        item=item%(int(len(self.data['theory'])))
         randomint=int(self.random_true*100)
             
         if x[0]<=randomint:
@@ -324,10 +324,14 @@ if __name__ == '__main__':
             assert data_test['pos'][i]==data['pos'][x]
             assert data_test['theory'][i]==data['theory'][x]
 
+    print(len(data_train['theory']))
+    print(len(data_train['pos']))
+    print(len(data_train['neg']))
+
     for index in range(4):
         data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
         for i in range(4*length-length):
-            if i<index*lenth:
+            if i<index*length:
                 x=i
             else:
                 x=i+length
