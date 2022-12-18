@@ -155,7 +155,7 @@ def evaluate(model,val_dataloader,args):
 def log_creater(output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    log_name = '{}.log'.format(time.strftime('%Y-%m-%d-%H-%M'))
+    log_name = '{}.log'.format(time.strftime('%Y-%m-%d-%H-%M-%S'))
     final_log_file = os.path.join(output_dir, log_name)
     # creat a log
     log = logging.getLogger('train_log')
