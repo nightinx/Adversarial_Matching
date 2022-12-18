@@ -308,35 +308,107 @@ class Eval_true_Dataset(Dataset):
             "token_type_ids":encoding['token_type_ids'].flatten(),
             "labels":label
         }
+class Eval_false_Dataset_V2(Dataset):
+    def __init__(self, data,tokenizer,sent_len,data_length):
+        self.data=data
+        self.data_length=data_length
+        self.data_size=self.data_length*self.data_length
+        self.sent_len=sent_len
+        self.tokenizer=tokenizer
+        
+    def __len__(self,):
+        return self.data_size
+    
+    def __getitem__(self,item):        
+        label=torch.tensor(0,dtype=torch.long)
+        theory=self.data['theory'][int(item/self.data_length)]
+        hypo=self.data['neg'][int(item/self.data_length)][item%self.data_length]
+        encoding=self.tokenizer.encode_plus(
+            theory,
+            hypo,
+            add_special_tokens=True, #add [CLS] and [SEP]
+            max_length=self.sent_len,#max input length
+            return_token_type_ids=True,#theory 11111 and hypo 00000
+            pad_to_max_length=True,# fill or cut up to max input length 
+            return_attention_mask=True,# attention encoding
+            return_tensors='pt'# pytorch model
+        )
+        
+        return {
+            "theory":theory,
+            "hypo":hypo,
+            "input_ids":encoding['input_ids'].flatten(),
+            "attention_mask":encoding['attention_mask'].flatten(),
+            "token_type_ids":encoding['token_type_ids'].flatten(),
+            "labels":label
+        }
+
+class Eval_true_Dataset_V2(Dataset):
+    def __init__(self, data,tokenizer,sent_len,data_length):
+        self.data=data
+        self.data_length=data_length
+        self.data_size=self.data_length
+        self.sent_len=sent_len
+        self.tokenizer=tokenizer
+        
+    def __len__(self,):
+        return self.data_size
+    
+    def __getitem__(self,item):        
+        label=torch.tensor(1,dtype=torch.long)
+        theory=self.data['theory'][item]
+        hypo=self.data['pos'][item]
+        encoding=self.tokenizer.encode_plus(
+            theory,
+            hypo,
+            add_special_tokens=True, #add [CLS] and [SEP]
+            max_length=self.sent_len,#max input length
+            return_token_type_ids=True,#theory 11111 and hypo 00000
+            pad_to_max_length=True,# fill or cut up to max input length 
+            return_attention_mask=True,# attention encoding
+            return_tensors='pt'# pytorch model
+        )
+        
+        return {
+            "theory":theory,
+            "hypo":hypo,
+            "input_ids":encoding['input_ids'].flatten(),
+            "attention_mask":encoding['attention_mask'].flatten(),
+            "token_type_ids":encoding['token_type_ids'].flatten(),
+            "labels":label
+        }
 
 
 if __name__ == '__main__':
+    
     read_path1='./data/entailment_trees_emnlp2021_data_v3/dataset/task_1/train.jsonl'
     read_path2='./data/aligened_tree/aligened_tree.jsonlines'
-    #split_folds(read_path1,read_path2,4,'./data/folds')
-    # sys.exit()
-    data=get_data(read_path1,read_path2)
-    length=319
-    for index in range(4):
-        data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
-        for i in range(length):
-            x=i+index*length
-            assert data_test['pos'][i]==data['pos'][x]
-            assert data_test['theory'][i]==data['theory'][x]
+    # #split_folds(read_path1,read_path2,4,'./data/folds')
+    # # sys.exit()
+    # data=get_data(read_path1,read_path2)
+    # length=319
+    # for index in range(4):
+    #     data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
+    #     for i in range(length):
+    #         x=i+index*length
+    #         assert data_test['pos'][i]==data['pos'][x]
+    #         assert data_test['theory'][i]==data['theory'][x]
 
-    print(len(data_train['theory']))
-    print(len(data_train['pos']))
-    print(len(data_train['neg']))
+    # print(len(data_train['theory']))
+    # print(len(data_train['pos']))
+    # print(len(data_train['neg']))
+    # for i in range(len(data_test['theory'])):
+    #     print(len(data_test['neg'][i]))
 
-    for index in range(4):
-        data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
-        for i in range(4*length-length):
-            if i<index*length:
-                x=i
-            else:
-                x=i+length
-            assert data_train['pos'][i]==data['pos'][x]
-            assert data_train['theory'][i]==data['theory'][x]
+    # for index in range(4):
+    #     data_train,data_test=get_data_from_folds(read_path1,'./data/folds',index)
+    #     for i in range(4*length-length):
+    #         if i<index*length:
+    #             x=i
+    #         else:
+    #             x=i+length
+    #         assert data_train['pos'][i]==data['pos'][x]
+    #         assert data_train['theory'][i]==data['theory'][x]
     
    
     
@@ -391,4 +463,3 @@ if __name__ == '__main__':
     #         print(data["pos"][step])
     #     if step>1005:
     #         break
-    
