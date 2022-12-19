@@ -287,6 +287,7 @@ class Eval_true_Dataset(Dataset):
     
     def __getitem__(self,item):        
         label=torch.tensor(1,dtype=torch.long)
+        item=item%len(self.data['pos'])
         theory=self.data['theory'][item]
         hypo=self.data['pos'][item]
         encoding=self.tokenizer.encode_plus(
@@ -356,6 +357,7 @@ class Eval_true_Dataset_V2(Dataset):
     
     def __getitem__(self,item):        
         label=torch.tensor(1,dtype=torch.long)
+        item=item%len(self.data['pos'])
         theory=self.data['theory'][item]
         hypo=self.data['pos'][item]
         encoding=self.tokenizer.encode_plus(
