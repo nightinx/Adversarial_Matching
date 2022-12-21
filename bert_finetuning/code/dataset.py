@@ -437,7 +437,12 @@ if __name__ == '__main__':
     # test_data_loader=DataLoader(test_dataset,batch_size=1)
     # train_data_loader=DataLoader(train_dataset,batch_size=1)
 
+    data_train,data_test=get_data_from_folds(read_path1,'./data/folds',0)
+    train_dataset=InputDataset_V2(tokenizer=tokenizer,sent_len= args.sent_len,data_size=args.train_data_size,data=data_train,random_true=args.random_true)
+    test_dataset=InputDataset_V2(tokenizer=tokenizer,sent_len= args.sent_len,data_size=args.test_data_size,data=data_test,random_true=args.random_true)
 
+    train_dataloader = DataLoader(train_dataset,batch_size=batch_size)
+    val_dataloader = DataLoader(test_dataset,batch_size=batch_size)
 
     # for step, batch in enumerate(train_data_loader):
     #     print(step)
