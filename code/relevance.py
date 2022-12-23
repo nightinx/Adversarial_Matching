@@ -19,7 +19,7 @@ def add_learner_params():
     parser=argparse.ArgumentParser()
     # trainer params
     parser.add_argument('--sent_len', default=500, type=int, help='max length of sentences fed into bert')
-    parser.add_argument('--batch_size', default=int(1840/4), type=int, help='batch size for both training and eval')
+    parser.add_argument('--batch_size', default=460, type=int, help='batch size for both training and eval')
     parser.add_argument('--model_path', default='./bert_finetuning/cache/saved_model_16_50000_5000/model_2022-12-17-05-03.bin', type=str, help='model path')
     args=parser.parse_args()
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -44,8 +44,8 @@ def eval_batch(args,model,batch):
     return torch.softmax(outputs.logits,dim=1)[:,1]
 
 class Eval_Dataset(Dataset):
-    def __init__(self, tsk:EBdataset,tokenizer,args):
-        self.data=tsk.data
+    def __init__(self, data,tokenizer,args):
+        self.data=data
         self.sent_len=args.sent_len
         self.tokenizer=tokenizer
     
@@ -55,7 +55,7 @@ class Eval_Dataset(Dataset):
     
     def __getitem__(self,item):        
         label=torch.tensor(1,dtype=torch.long)
-        theory=self.data[int(item/len(self.data))].golden
+        theory=self.data[int(item/len(self.data))].topara('golden')
         hypo=self.data[int(item/len(self.data))].neg[item%len(self.data)]
         encoding=self.tokenizer.encode_plus(
             theory,
@@ -80,11 +80,12 @@ class Eval_Dataset(Dataset):
 def relevance(tsk:EBdataset):
     args=add_learner_params()
     tokenizer=BertTokenizer.from_pretrained('bert-base-uncased')
-    dataset=Eval_Dataset(tsk,tokenizer,args)
+    dataset=Eval_Dataset(tsk.data,tokenizer,args)
+    data_len=len(tsk.data)
     dataloader=DataLoader(dataset,batch_size=args.batch_size)
     model=load_model(args)
 
-    save_mat=torch.zeros((len(tsk.data),len(tsk.data))).to(args.device)
+    save_mat=torch.zeros((data_len,data_len)).to(args.device)
     row_idx=0
     col_idx=0
 
@@ -93,11 +94,12 @@ def relevance(tsk:EBdataset):
         logits=eval_batch(args,model,batch)
         save_mat[row_idx][col_idx:col_idx+args.batch_size]=logits
         col_idx+=args.batch_size
-        if col_idx>=len(tsk.data):
+        if col_idx>=data_len:
             col_idx=0
             row_idx+=1
-
-    return save_mat.detach().cpu().numpy()
+    save_mat=save_mat.detach().cpu().numpy()
+    print(save_mat)
+    return save_mat
 
 
 if __name__=='__main__':

@@ -87,3 +87,12 @@ def write_np(tsk,pdir,name):
             attackhypo=align_response(data1,data2,tdoc)
             data1.neg.append(attackhypo)
     np.save(osp.join(pdir,name),np.array([data.neg for data in tsk]))
+
+def main():
+    tsk1_path='/home/cc/github/Adversarial_Matching/data/entailment_trees_emnlp2021_data_v3/dataset/task_1'
+    tsk2_path='/home/cc/github/Adversarial_Matching/data/entailment_trees_emnlp2021_data_v3/dataset/task_2'
+    tsk1=EBdataset(tsk1_path,tsk2_path)
+    write_np(tsk1.data,'data/align_v2','neg.npy')
+
+if __name__=='__main__':
+    main()
