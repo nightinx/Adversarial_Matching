@@ -21,3 +21,7 @@ def set_seed(seed=0):
     # some cudnn methods can be random even after fixing the seed
     # unless you tell it to be deterministic
     torch.backends.cudnn.deterministic = True
+
+def savenp(dir,name,a):
+    mkdir(dir)
+    np.save(osp.join(dir,name),a)
