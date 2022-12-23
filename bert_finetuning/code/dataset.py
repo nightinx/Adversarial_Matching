@@ -61,7 +61,29 @@ def get_final_data(pos,neg,theory):
             data['neg'].append(neg[i])
             data['pos'].append(pos[i])
         return data
-        
+
+def get_data_from_entailment_bank(path):
+    dict_hypo_theoryset={}
+    
+    pattern = r'sent\d+: '
+    with jsonlines.open(read_path1, "r") as rfd:
+        for data in rfd:
+            result = re.split(pattern, data['context'])
+            result_n = set([x.strip() for x in result if x.strip()!=''])
+            dict_hypo_theoryset[data['hypothesis']]=result_n
+    rfd.close()
+    
+    theory=[]
+    pos_hypo=[]
+    for hypo in dict_hypo_theoryset.keys():
+        para=""
+        for sent in dict_hypo_theoryset[hypo]:
+            para+=sent+'. '
+        theory.append(para.strip())
+        pos_hypo.append(hypo)
+    data={'theory':theory,'pos':pos}
+    return data
+    
 def get_data(read_path1,read_path2):
     dict_hypo_theoryset={}
     
