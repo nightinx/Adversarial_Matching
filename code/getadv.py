@@ -18,15 +18,15 @@ def tsk2():
     tsk1=EBdataset(tsk1_path,tsk2_path)
     tsk1.get_neg(osp.join('data/alignment','neg.npy'))
     tsk1.get_tsk2_table()
-    return tsk2
+    return tsk1
 
 def getadv(tsk:EBdataset,relevance,similarity,lambda_,topcnt,tskmode='task1'):
     assert tskmode in ['task1','task2']
     largenumber=1e10
     weight_matrix=np.log(relevance)+lambda_*np.log(similarity)
-    for i in weight_matrix.shape[0]:
-        for j in weight_matrix.shape[1]:
-            if relevance[i][j]>0.9 or similarity[i][j]>0.85 or j in tsk.data[i].exclude:
+    for i in range(weight_matrix.shape[0]):
+        for j in range(weight_matrix.shape[1]):
+            if relevance[i][j]>0.9 or similarity[i][j]>0.85 or similarity[i][j]<0.3 or (j in tsk.data[i].exclude):
                 weight_matrix[i][j]=-largenumber
 
     adv=[]
@@ -47,15 +47,16 @@ def getadv(tsk:EBdataset,relevance,similarity,lambda_,topcnt,tskmode='task1'):
     return np.array(adv)
     
 def main(topcnt):
-    tsk1=tsk1()
-    tsk2=tsk2()
     relevance=np.load('data/relevance/test.npy')
     similarity=np.load('data/similarity/test.npy')
-    t1np=getadv(tsk1,relevance,similarity,5,topcnt,tskmode='task1')
-    t2np=getadv(tsk2,relevance,similarity,5,topcnt,tskmode='task2')
+    tsk_1=tsk1()
+    tsk_2=tsk2()
+    t1np=getadv(tsk_1,relevance,similarity,5,topcnt,tskmode='task1')
+    t2np=getadv(tsk_2,relevance,similarity,5,topcnt,tskmode='task2')
     savenp(f'data/top{topcnt}','task1.npy',t1np)
     savenp(f'data/top{topcnt}','task2.npy',t2np)
 
-if __name__='__main__':
+
+if __name__=='__main__':
     main(3)
 

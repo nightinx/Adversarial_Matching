@@ -32,10 +32,10 @@ def main():
     tsk1_path='/home/cc/github/Adversarial_Matching/data/entailment_trees_emnlp2021_data_v3/dataset/task_1'
     tsk2_path='/home/cc/github/Adversarial_Matching/data/entailment_trees_emnlp2021_data_v3/dataset/task_2'
     tsk1=EBdataset(tsk1_path,tsk2_path)
-    tsk1.get_neg(osp.join('../data/alignment','neg.npy'))
+    tsk1.get_neg(osp.join('data/alignment','neg.npy'))
     tsk1.get_tsk1_table()
     a=similarity(tsk1)
-    savenp('../data/similarity','test.npy',a)
+    savenp('data/similarity','test.npy',a)
 
 if __name__=='__main__':
     main()
