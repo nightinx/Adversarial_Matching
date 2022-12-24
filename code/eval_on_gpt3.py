@@ -1,5 +1,6 @@
 from qadataset import *
-def main():
+
+def test():
     path='data/QAdataset/multitask1.jsonl'
     QA=QAdataset(path)
     relevance=np.load('data/relevance/test.npy')
@@ -12,6 +13,10 @@ def main():
         for j in qa.source:
             print(relevance[qa.id][j])
             print(similarity[qa.id][j])
+def main():
+    path='data/QAdataset/multitask1.jsonl'
+    QA=QAdataset(path)
+   
 
 if __name__=='__main__':
     main()
