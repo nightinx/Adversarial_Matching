@@ -27,31 +27,49 @@ def prompt(data):
     return para
 
 def getresponse(prompt):
-    response=openai.Completion.create(
-    model="text-davinci-003",
-    prompt=prompt,
-    temperature=0,
-    max_tokens=1,
-    top_p=1,
-    frequency_penalty=0,
-    presence_penalty=0,
-    stop=["\n"], 
-    )
-    text=response["choices"][0]["text"]
-    return text,response
+    i=0
+    while i<4:
+        time.sleep(i*10)
+        try:
+            response=openai.Completion.create(
+            model="text-davinci-003",
+            prompt=prompt,
+            temperature=0,
+            max_tokens=1,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            stop=["\n"], 
+            )
+            text=response["choices"][0]["text"]
+            return text
+        except:
+            i+=1
+    return "error"
 
 def main():
+    openai.api_key = "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"
+
     path='data/QAdataset/multitask1.jsonl'
     QA=QAdataset(path)
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    with open('data/evaluate/tsk1.csv','a') as f:
+        f.write(f"id,text\n")
+        for data in QA.data:
+            text=getresponse(prompt(data))
+            print(f"{data.id},{text}")
+            f.write(f"{data.id},{text}\n")
+    f.close()
 
-    start_sequence = "\nA:"
-    restart_sequence = "\n\nQ: "
-    
-    for i in range(100):
-        text,_=getresponse(prompt(QA.data[i]))
-        print(text)
-        time.sleep(10)
+    path='data/QAdataset/multitask2.jsonl'
+    QA=QAdataset(path)
+    with open('data/evaluate/tsk2.csv','a') as f:
+        f.write(f"id,text\n")
+        for data in QA.data:
+            text=getresponse(prompt(data))
+            print(f"{data.id},{text}")
+            f.write(f"{data.id},{text}\n")
+    f.close()
+           
     
 
 if __name__=='__main__':
