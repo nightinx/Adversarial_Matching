@@ -48,7 +48,7 @@ def getresponse(prompt):
     return "error"
 
 def main():
-    openai.api_key = "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"
+    openai.api_key = os.getenv('api-key')
 
     path='data/QAdataset/multitask1.jsonl'
     QA=QAdataset(path)
