@@ -4,6 +4,7 @@ import openai
 import time
 import random
 from ebdataset import *
+from api_key import get_api_key
 def test():
     path='data/QAdataset/multitask1.jsonl'
     QA=QAdataset(path)
@@ -93,7 +94,7 @@ def main():
     tsk2.get_tsk1_table()
 
 
-    openai.api_key = os.getenv('api-key')
+    openai.api_key = get_api_key()
 
     path='data/QAdataset/multitask1.jsonl'
     QA=QAdataset(path)

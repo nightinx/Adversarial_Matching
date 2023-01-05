@@ -2,6 +2,7 @@ from qadataset import *
 import os
 import openai
 import time
+from api_key import get_api_key
 def test():
     path='data/QAdataset/multitask1.jsonl'
     QA=QAdataset(path)
@@ -48,7 +49,7 @@ def getresponse(prompt):
     return "error"
 
 def main():
-    openai.api_key = os.getenv('api-key')
+    openai.api_key = get_api_key()
 
     path='data/QAdataset/multitask1.jsonl'
     QA=QAdataset(path)
